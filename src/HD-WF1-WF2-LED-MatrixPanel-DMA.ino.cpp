@@ -6,6 +6,8 @@
   #include "hd-wf1-esp32s2-config.h"
 #elif defined(WF2)
   #include "hd-wf2-esp32s3-config.h"
+#elif defined(WF4)
+  #include "hd-wf4-esp32s3-config.h"
 #else
   #error "Please define either WF1 or WF2"
 #endif  

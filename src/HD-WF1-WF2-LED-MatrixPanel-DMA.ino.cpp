@@ -9,9 +9,8 @@
 #elif defined(WF4)
   #include "hd-wf4-esp32s3-config.h"
 #else
-  #error "Please define either WF1 or WF2"
+  #error "Please define WF1, WF2, or WF4"
 #endif  
-
 
 #include <esp_err.h>
 #include <esp_log.h>
@@ -57,10 +56,10 @@ const char* ntpLastUpdate     = "/ntp_last_update.txt";
 
 /*-------------------------- HUB75E DMA Setup -----------------------------*/
 #define PANEL_RES_X 64      // Number of pixels wide of each INDIVIDUAL panel module. 
-#define PANEL_RES_Y 32     // Number of pixels tall of each INDIVIDUAL panel module.
-#define PANEL_CHAIN 1      // Total number of panels chained one to another
+#define PANEL_RES_Y 32      // Number of pixels tall of each INDIVIDUAL panel module.
+#define PANEL_CHAIN 1       // Total number of panels chained one to another
 
-
+// Pin mappings per board type
 #if defined(WF1)
 
 HUB75_I2S_CFG::i2s_pins _pins_x1 = {
@@ -88,7 +87,7 @@ HUB75_I2S_CFG::i2s_pins _pins_x2 = {
 
 #elif defined(WF4)
 
-// Use your WF4 pin names here (single HUB75 port on X1)
+// WF4: single HUB75 port on X1, using WF4_* pin macros from hd-wf4-esp32s3-config.h
 HUB75_I2S_CFG::i2s_pins _pins_x1 = {
   WF4_X1_R1_PIN, WF4_X1_G1_PIN, WF4_X1_B1_PIN,
   WF4_X1_R2_PIN, WF4_X1_G2_PIN, WF4_X1_B2_PIN,
@@ -96,13 +95,11 @@ HUB75_I2S_CFG::i2s_pins _pins_x1 = {
   WF4_LAT_PIN,   WF4_OE_PIN,    WF4_CLK_PIN
 };
 
-// If WF4 only uses X1, DO NOT declare _pins_x2 here.
+// No _pins_x2 here for WF4 (we are only using X1)
 
 #else
   #error "Please define WF1, WF2, or WF4"
 #endif
-
-
 
 /*-------------------------- Class Instances ------------------------------*/
 // Routing in the root page and webcamview.html natively uses the request
@@ -190,8 +187,6 @@ void updateBouncingSquares() {
   }
 }
 
-
-
 /*
 Method to print the reason by which ESP32
 has been awaken from sleep
@@ -212,14 +207,13 @@ void print_wakeup_reason(){
   }
 }
 
-
 // Function that gets current epoch time
 unsigned long getEpochTime() {
   time_t now;
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
     //Serial.println("Failed to obtain time");
-    return(0);
+    return 0;
   }
   time(&now);
   return now;
@@ -319,7 +313,6 @@ void setup() {
     //mxconfig.double_buff = false;  
     //mxconfig.min_refresh_rate = 30;
 
-
     // Display Setup
     dma_display = new MatrixPanel_I2S_DMA(mxconfig);
     dma_display->begin();
@@ -335,7 +328,6 @@ void setup() {
     dma_display->clearScreen();
     dma_display->print("Connecting");     
 
-
   /*-------------------- START THE NETWORKING --------------------*/
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(wifi_ssid, wifi_pass); // configure in the *-config.h file
@@ -347,7 +339,6 @@ void setup() {
   }
   Serial.println(" connected");
     
-
   /*-------------------- --------------- --------------------*/
   //Increment boot number and print it every reboot
   ++bootCount;
@@ -367,9 +358,7 @@ void setup() {
   else
   {
     dma_display->print("Starting.");
-
   }
-
 
   /*
     We set our ESP32 to wake up for an external trigger.
@@ -383,12 +372,11 @@ void setup() {
   button.interval(5);   // DEBOUNCE INTERVAL IN MILLISECONDS
   button.setPressedState(LOW); // INDICATE THAT THE LOW STATE CORRESPONDS TO PHYSICALLY PRESSING THE BUTTON
 
-
   /*-------------------- LEDC Controller --------------------*/
     // Prepare and then apply the LEDC PWM timer configuration
     ledc_timer_config_t ledc_timer = {
         .speed_mode       = LEDC_LOW_SPEED_MODE,
-        .duty_resolution  = LEDC_TIMER_13_BIT ,
+        .duty_resolution  = LEDC_TIMER_13_BIT,
         .timer_num        = LEDC_TIMER_0,
         .freq_hz          = 4000,  // Set output frequency at 4 kHz
         .clk_cfg          = LEDC_AUTO_CLK
@@ -407,18 +395,16 @@ void setup() {
     };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));  
 
-
     // Start fading that LED
     xTaskCreatePinnedToCore(
       ledFadeTask,            /* Task function. */
-      "ledFadeTask",                 /* name of task. */
-      1000,                    /* Stack size of task */
-      NULL,                     /* parameter of the task */
-      1,                        /* priority of the task */
-      &Task1,                   /* Task handle to keep track of created task */
-      0);                       /* Core */   
+      "ledFadeTask",          /* name of task. */
+      1000,                   /* Stack size of task */
+      NULL,                   /* parameter of the task */
+      1,                      /* priority of the task */
+      &Task1,                 /* Task handle to keep track of created task */
+      0);                     /* Core */   
     
-
   /*-------------------- INIT LITTLE FS --------------------*/
   if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
       Serial.println("LittleFS Mount Failed");
@@ -537,17 +523,16 @@ void setup() {
       // Save NTP update timestamp
       ntp_last_update_ts = getEpochTime();
       if (ntp_last_update_ts > 0) {
-        File file = fs.open(ntpLastUpdate, FILE_WRITE);
-        if(!file) {
+        File fileW = fs.open(ntpLastUpdate, FILE_WRITE);
+        if(!fileW) {
             Serial.println("Failed to open NTP timestamp file for writing");
         } else  {
-            file.write( (uint8_t*) &ntp_last_update_ts, sizeof(ntp_last_update_ts));          
-            file.close();      
+            fileW.write( (uint8_t*) &ntp_last_update_ts, sizeof(ntp_last_update_ts));          
+            fileW.close();      
             Serial.print("Saved NTP update timestamp: "); 
             Serial.println(ntp_last_update_ts, DEC);            
         }
       }
-
   }
   
   // Update ESP32 internal RTC if we have valid external RTC data
@@ -585,11 +570,11 @@ void setup() {
 
     // Initialize bouncing squares for animation mode
     initBouncingSquares();
-
 }
 
 unsigned long last_update = 0;
 char buffer[64];
+
 void loop() 
 {
     // YOU MUST CALL THIS EVERY LOOP
@@ -694,18 +679,18 @@ void updateClockWithAnimation() {
 
             if (y * 2 < PANEL_RES_Y) {
                 // top-middle part of screen, transition of value
-                float t = (2.f * y + 1) / PANEL_RES_Y;
+                float tv = (2.f * y + 1) / PANEL_RES_Y;
                 dma_display->drawPixelRGB888(x, y,
-                    (r * t) * f,
-                    (g * t) * f,
-                    (b * t) * f);
+                    (r * tv) * f,
+                    (g * tv) * f,
+                    (b * tv) * f);
             } else {
                 // middle to bottom of screen, transition of saturation
-                float t = (2.f * (PANEL_RES_Y - y) - 1) / PANEL_RES_Y;
+                float tv = (2.f * (PANEL_RES_Y - y) - 1) / PANEL_RES_Y;
                 dma_display->drawPixelRGB888(x, y,
-                    (r * t + 1 - t) * f,
-                    (g * t + 1 - t) * f,
-                    (b * t + 1 - t) * f);
+                    (r * tv + 1 - tv) * f,
+                    (g * tv + 1 - tv) * f,
+                    (b * tv + 1 - tv) * f);
             }
         }
     }
@@ -775,4 +760,4 @@ void updateClockOverlay() {
         }
         last_update = millis();
     }
-} 
+}

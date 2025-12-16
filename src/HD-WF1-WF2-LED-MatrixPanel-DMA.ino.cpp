@@ -63,14 +63,45 @@ const char* ntpLastUpdate     = "/ntp_last_update.txt";
 
 #if defined(WF1)
 
-HUB75_I2S_CFG::i2s_pins _pins_x1 = {WF1_R1_PIN, WF1_G1_PIN, WF1_B1_PIN, WF1_R2_PIN, WF1_G2_PIN, WF1_B2_PIN, WF1_A_PIN, WF1_B_PIN, WF1_C_PIN, WF1_D_PIN, WF1_E_PIN, WF1_LAT_PIN, WF1_OE_PIN, WF1_CLK_PIN};
+HUB75_I2S_CFG::i2s_pins _pins_x1 = {
+  WF1_R1_PIN, WF1_G1_PIN, WF1_B1_PIN,
+  WF1_R2_PIN, WF1_G2_PIN, WF1_B2_PIN,
+  WF1_A_PIN,  WF1_B_PIN,  WF1_C_PIN, WF1_D_PIN, WF1_E_PIN,
+  WF1_LAT_PIN, WF1_OE_PIN, WF1_CLK_PIN
+};
+
+#elif defined(WF2)
+
+HUB75_I2S_CFG::i2s_pins _pins_x1 = {
+  WF2_X1_R1_PIN, WF2_X1_G1_PIN, WF2_X1_B1_PIN,
+  WF2_X1_R2_PIN, WF2_X1_G2_PIN, WF2_X1_B2_PIN,
+  WF2_A_PIN,     WF2_B_PIN,     WF2_C_PIN, WF2_D_PIN, WF2_X1_E_PIN,
+  WF2_LAT_PIN,   WF2_OE_PIN,    WF2_CLK_PIN
+};
+
+HUB75_I2S_CFG::i2s_pins _pins_x2 = {
+  WF2_X2_R1_PIN, WF2_X2_G1_PIN, WF2_X2_B1_PIN,
+  WF2_X2_R2_PIN, WF2_X2_G2_PIN, WF2_X2_B2_PIN,
+  WF2_A_PIN,     WF2_B_PIN,     WF2_C_PIN, WF2_D_PIN, WF2_X2_E_PIN,
+  WF2_LAT_PIN,   WF2_OE_PIN,    WF2_CLK_PIN
+};
+
+#elif defined(WF4)
+
+// Use your WF4 pin names here (single HUB75 port on X1)
+HUB75_I2S_CFG::i2s_pins _pins_x1 = {
+  WF4_X1_R1_PIN, WF4_X1_G1_PIN, WF4_X1_B1_PIN,
+  WF4_X1_R2_PIN, WF4_X1_G2_PIN, WF4_X1_B2_PIN,
+  WF4_A_PIN,     WF4_B_PIN,     WF4_C_PIN, WF4_D_PIN, WF4_X1_E_PIN,
+  WF4_LAT_PIN,   WF4_OE_PIN,    WF4_CLK_PIN
+};
+
+// If WF4 only uses X1, DO NOT declare _pins_x2 here.
 
 #else
-
-HUB75_I2S_CFG::i2s_pins _pins_x1 = {WF2_X1_R1_PIN, WF2_X1_G1_PIN, WF2_X1_B1_PIN, WF2_X1_R2_PIN, WF2_X1_G2_PIN, WF2_X1_B2_PIN, WF2_A_PIN, WF2_B_PIN, WF2_C_PIN, WF2_D_PIN, WF2_X1_E_PIN, WF2_LAT_PIN, WF2_OE_PIN, WF2_CLK_PIN};
-HUB75_I2S_CFG::i2s_pins _pins_x2 = {WF2_X2_R1_PIN, WF2_X2_G1_PIN, WF2_X2_B1_PIN, WF2_X2_R2_PIN, WF2_X2_G2_PIN, WF2_X2_B2_PIN, WF2_A_PIN, WF2_B_PIN, WF2_C_PIN, WF2_D_PIN, WF2_X2_E_PIN, WF2_LAT_PIN, WF2_OE_PIN, WF2_CLK_PIN};
-
+  #error "Please define WF1, WF2, or WF4"
 #endif
+
 
 
 /*-------------------------- Class Instances ------------------------------*/
